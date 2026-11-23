@@ -13,5 +13,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync --all-groups --locked
+      # The pre-commit hook's generic file checks, for contributors who never
+      # ran `make hooks`. lint and typecheck are skipped: check-all runs them.
+      - run: SKIP=lint,typecheck uvx pre-commit run --all-files --show-diff-on-failure
       - run: make check-all
       - run: make gate

@@ -36,7 +36,8 @@ make check-all
 
 That is all the offline path needs: no API key, no GPU, no model server.
 `make hooks` optionally installs a git pre-commit hook that runs basic file
-checks plus `make lint` and `make typecheck`; the tests stay in CI.
+checks plus `make lint` and `make typecheck`; the tests stay in CI. CI runs
+the same file checks on every push, hook or not.
 
 Settings are environment variables (listed [below](#environment-variables)).
 To keep them in a file instead, copy the template and uncomment what you need:
@@ -183,7 +184,7 @@ work/               local planning notes, not tracked
 .env.example        template for a local, gitignored .env
 .pre-commit-config.yaml  optional hook: file checks, make lint, make typecheck
 Makefile            the commands below
-.github/workflows/  CI: `make check-all`, then `make gate`
+.github/workflows/  CI: pre-commit file checks, `make check-all`, `make gate`
 ```
 
 Only `NN_*.py` files are lessons; the tests and `make local` select them by that

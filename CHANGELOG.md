@@ -37,7 +37,8 @@
   ADR 0009), separate from the target. Lesson 07 measures a model classifier
   next to the word list; lessons 11 and 12 take their judge from the role.
 - An optional pre-commit hook (`make hooks`): generic file checks plus
-  `make lint` and `make typecheck`, the same commands CI runs.
+  `make lint` and `make typecheck`, the same commands CI runs. CI also runs
+  the hook's file checks, so they apply to contributors without the hook.
 - Lessons 01, 04, 06, 07, and 18 point to the sibling lessons they build on
   in agents-, openai-, and rag-primer.
 - `.env.example`: settings can live in a gitignored `.env`, loaded by the
