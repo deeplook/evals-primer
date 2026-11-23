@@ -1,8 +1,10 @@
 """Region-aware multilingual evals: ask local questions in the local language.
 
-INCLUDE-2.0 (2026) found models lose about 14.5 points on regional knowledge
-when it is asked in the region's language rather than in English. Translating
-an English benchmark misses this; the questions have to be about the region.
+INCLUDE-2.0 (2026) found that frontier models score about 14.5 points lower
+on locally embedded knowledge than on widely documented facts about a region,
+and that open-weight models do not reliably answer the same whether a
+question is asked in English or in its original language. Translating an
+English benchmark misses both; the questions have to be about the region.
 
 Each regional fact is asked twice, in English and in the original language.
 Scoring needs aliases: asked in Polish, a correct answer about Kraków names

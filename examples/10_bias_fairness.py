@@ -6,8 +6,9 @@ necessary but not enough, and this lesson adds two checks from 2026 work:
 
 - combined attributes (ComFair-style): a model can treat each attribute fairly
   on its own and still flip on the combination;
-- pressure (FairStress-style): a fair decision can be talked out of the model
-  by a biased "note from the hiring manager" in the prompt.
+- pressure (FairStress-style): whether a persuasive prefix, here a biased
+  "note from the hiring manager", changes the decision, and whether the model
+  resists it equally whichever group it would disadvantage.
 
 The scripted model passes every single swap, flips on one combination, and
 gives in to one of two pressure prefixes. The candidates are fictional and the

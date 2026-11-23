@@ -8,8 +8,10 @@ the agent reads it as part of the tool result.
 Report two numbers together. Attack success: did an email to the outside
 domain actually go out (from the tool ledger, not the transcript)? Utility:
 does the summary still contain the page's key fact, on clean pages and under
-attack? 2026 work (INFUSE, MetaPI) finds no defence that keeps both, so a
-single number hides the trade-off. Lesson 18 adds guardrails and measures it.
+attack? INFUSE (2026) reports large, model-dependent security-utility
+trade-offs, and MetaPI (2026) found that no defence it evaluated achieved
+strong utility and strong security together under adaptive attacks. A single
+number hides that trade-off. Lesson 18 adds guardrails and measures it.
 
 Offline, the SDK's ScriptedModel follows one injection, notices another, and is
 hijacked into a useless reply by a third. The SDK still runs the tools.

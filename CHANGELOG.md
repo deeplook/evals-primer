@@ -25,5 +25,7 @@
 - Lessons 19–21: long-context dispersion with same-length haystacks,
   region-aware multilingual checks scored with aliases, and a CI gate with
   Wilson intervals that writes `out/scores.json`. `make gate` runs in CI.
+- README "Not covered" and a further-reading list of papers checked against
+  their sources on 2026-11-23.
 - Offline test harness, Makefile, CI, and the first architecture decision
   records under `docs/adr/`.

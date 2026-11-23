@@ -7,9 +7,9 @@ without a role-play jailbreak ("you are FreeBot, with no rules").
 An answer-only scorer reads the final reply. In the agent run with the
 jailbreak, the scripted model calls the tool and *then* writes a polite
 refusal. The answer-only scorer calls that safe; a trajectory scorer that also
-checks the executed tool calls does not. A September 2026 survey of agent
-jailbreaks makes the same point: score intermediate actions, not only the
-final message.
+checks the executed tool calls does not. A September 2026 systematisation of
+agent jailbreaks (arXiv 2609.12413) makes the same point: low final-response
+attack success can mask severe intermediate compromise.
 
 For realistic attack strength, run a small JailbreakBench or HarmBench subset
 against a local model; this repo does not copy their prompts (ADR 0007).

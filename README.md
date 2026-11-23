@@ -136,16 +136,45 @@ out/inspect-logs`.
 
 ## Not covered
 
-Full public benchmarks (HarmBench, JailbreakBench, SWE-bench), leaderboards,
-hosted observability products, and computer-use evals. Datasets here stay tiny
-and hand-written on purpose: public benches are contaminated and saturating.
+- **Full public benchmarks** (HarmBench, JailbreakBench, SWE-bench). Datasets
+  here stay tiny and hand-written on purpose; public sets are contaminated and
+  saturating (lesson 05), and none of their prompts are copied in (ADR 0007).
+- **Statistical power.** Five to eight items per set teach the mechanics, not
+  the numbers. Lesson 21 prints Wilson intervals to show how wide they are; a
+  real suite needs hundreds of items per metric.
+- **Computer-use and long-horizon agents.** A 24 GB machine is the wrong place
+  for an OSWorld-style desktop benchmark, and the agent lessons use in-memory
+  fake tools, not a sandbox.
+- **Production observability.** No tracing backend, dashboard, or pass-rate
+  history over time; Inspect logs in `out/` are the only record.
+- **Serious red-teaming.** `make redteam` runs one narrow garak probe. PyRIT,
+  promptfoo, and adaptive attack search are left to their own docs.
+- **Model rankings.** The `llama3.2` results quoted in lesson docstrings and
+  commit messages are single runs of a 3B model; they show the checks working
+  on real output, not how good any model is.
 
 ## Further reading
+
+Tools:
 
 - [Inspect documentation](https://inspect.aisi.org.uk/)
 - [garak](https://github.com/NVIDIA/garak), LLM vulnerability scanner
 - [DeepEval](https://deepeval.com/) and [pytest-evals](https://github.com/AlmogBaku/pytest-evals), pytest-style alternatives
-- Sibling primers: [agents-primer](https://github.com/deeplook/agents-primer), [harness-primer](https://github.com/deeplook/harness-primer), [openai-primer](https://github.com/deeplook/openai-primer), [llamacpp-primer](https://github.com/deeplook/llamacpp-primer)
+
+Papers and posts the lessons draw on (checked 2026-11-23):
+
+- Contamination (05): OpenAI, [Why SWE-bench Verified no longer measures frontier coding capabilities](https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/) and [Separating signal from noise in coding evaluations](https://openai.com/index/separating-signal-from-noise-coding-evaluations/); Akhtar et al., [When AI Benchmarks Plateau](https://proceedings.mlr.press/v306/akhtar26a.html) (ICML 2026)
+- Hallucination (06): [SHAM-Bench](https://arxiv.org/abs/2610.27370) (span level); [HaluCheck](https://arxiv.org/abs/2611.08231) (includes agent trajectories)
+- Bias (10): Ai2, [FairStress](https://huggingface.co/blog/allenai/fairstress); [ComFair](https://aclanthology.org/2026.emnlp-main.1875/) (EMNLP 2026)
+- Judges (11–12): Kumar et al., [All Verdicts are Not Equal](https://arxiv.org/abs/2610.12083) (position swaps)
+- Injection (13–14, 18): [INFUSE](https://arxiv.org/abs/2610.20776); [MetaPI](https://arxiv.org/abs/2611.10026)
+- Jailbreaks (15): [SoK: Rethinking Jailbreaking in the Era of Agentic AI](https://arxiv.org/abs/2609.12413)
+- Multi-turn attacks (16): [EvoFlint](https://arxiv.org/abs/2609.00487); [Reject, Remember, Retry](https://arxiv.org/abs/2610.31937)
+- Agents (17): [τ-bench](https://arxiv.org/abs/2406.12045) (pass^k); [Holistic Agent Leaderboard](https://proceedings.iclr.cc/paper_files/paper/2026/hash/a0928f924a344aaebbb7f6cd8d56e34c-Abstract-Conference.html) (ICLR 2026)
+- Long context (19): [LURCH](https://arxiv.org/abs/2610.22067), "Beyond Context Length"
+- Multilingual (20): [INCLUDE-2.0](https://aclanthology.org/2026.emnlp-main.1344/) (EMNLP 2026)
+
+Sibling primers: [agents-primer](https://github.com/deeplook/agents-primer), [harness-primer](https://github.com/deeplook/harness-primer), [openai-primer](https://github.com/deeplook/openai-primer), rag-primer (retrieval metrics), [llamacpp-primer](https://github.com/deeplook/llamacpp-primer)
 
 ## License
 

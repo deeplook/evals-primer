@@ -1,9 +1,9 @@
 """Long context beyond the needle: scattered evidence, not length, is the hard part.
 
 A needle test hides one fact in filler and asks for it back. Most models pass.
-LURCH (2026) found that what hurts is evidence *dispersion*: a question whose
-answer needs several facts, spread through the context, fails far more often
-than the same question with the facts side by side, at the same length.
+LURCH (2026) found that context length alone does not explain failures:
+performance degrades sharply when the evidence for an answer is *dispersed*
+through the context, and stays relatively stable when it is localised.
 
 Two haystacks of identical length are built from the same filler and the same
 facts. In the *local* one each chain of facts sits together; in the

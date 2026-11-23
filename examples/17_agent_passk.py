@@ -9,8 +9,9 @@ Agent benchmarks such as tau-bench report pass^k for that reason.
 
 Part 2, scaffold cost. The same tasks run under two scaffolds: one agent, and
 a planner agent whose plan the executor follows. Report accuracy *and* model
-calls, tokens, and time; HAL-style comparisons show a better score can simply
-be a more expensive scaffold. Offline, each scripted model call is charged a
+calls, tokens, and time: a better score can simply come from a more expensive
+scaffold. HAL (ICLR 2026) compares agents across models, scaffolds, and
+benchmarks; its validation runs alone cost about $40,000. Offline, each scripted model call is charged a
 fixed 460 tokens so the cost difference is visible.
 """
 
