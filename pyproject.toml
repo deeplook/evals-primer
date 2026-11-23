@@ -8,11 +8,25 @@ authors = [
     { name = "Dinu Gherman", email = "gherman@darwin.in-berlin.de" }
 ]
 requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Education",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security",
+    "Topic :: Software Development :: Testing",
+]
 dependencies = [
     "inspect-ai>=0.3.291",
     "openai-agents>=0.25.0",
     "python-dotenv>=1.2.4",
 ]
+
+[project.urls]
+Repository = "https://github.com/deeplook/evals-primer"
 
 [dependency-groups]
 dev = ["mypy>=1.0", "pytest>=8", "ruff>=0.11"]
