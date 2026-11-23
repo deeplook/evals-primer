@@ -14,5 +14,8 @@
   toxicity classifier measured against hand labels, PII leak detectors, and
   under- and over-refusal with a refusal detector that handles typographic
   apostrophes.
+- Lessons 10–12: bias (single swaps, combined attributes, pressure notes),
+  an LLM judge via `model_graded_qa` measured against gold labels, and
+  pairwise judge reliability with AB/BA position flips and Cohen's kappa.
 - Offline test harness, Makefile, CI, and the first architecture decision
   records under `docs/adr/`.

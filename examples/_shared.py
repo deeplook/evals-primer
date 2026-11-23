@@ -66,11 +66,14 @@ def skip(reason: str) -> NoReturn:
     raise SystemExit(0)
 
 
-def scripted_model(outputs: Mapping[str, str]) -> Model:
+def scripted_model(
+    outputs: Mapping[str, str], key: Callable[[str], str] = lambda prompt: prompt
+) -> Model:
     """An Inspect mock model that answers each prompt from a fixture table.
 
     Keyed by prompt, not call order, because Inspect may run samples
-    concurrently.
+    concurrently. `key` extracts the lookup key from a longer prompt, for
+    example the submission inside a judge's grading template.
     """
 
     def respond(
@@ -79,7 +82,7 @@ def scripted_model(outputs: Mapping[str, str]) -> Model:
         tool_choice: ToolChoice,
         config: GenerateConfig,
     ) -> ModelOutput:
-        prompt = messages[-1].text
+        prompt = key(messages[-1].text)
         if prompt not in outputs:
             raise KeyError(f"no scripted output for prompt: {prompt!r}")
         return ModelOutput.from_content(model="mockllm", content=outputs[prompt])
@@ -120,13 +123,15 @@ def local_model() -> Model:
     skip("no local OpenAI-compatible server found")
 
 
-def lesson_model(outputs: Mapping[str, str]) -> Model | str:
+def lesson_model(
+    outputs: Mapping[str, str], key: Callable[[str], str] = lambda prompt: prompt
+) -> Model | str:
     """Scripted by default, a local server with `--local`, a hosted API with `--live`."""
     if live():
         return live_model()
     if local():
         return local_model()
-    return scripted_model(outputs)
+    return scripted_model(outputs, key)
 
 
 # A check returns None when the sample passes, or a short reason when it fails.

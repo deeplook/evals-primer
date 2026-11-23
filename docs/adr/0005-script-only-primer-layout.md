@@ -14,7 +14,9 @@ Follow `primer-standards`: `[tool.uv] package = false`, no `[build-system]`,
 numbered lessons under `examples/`, offline tests under `tests/`, generated
 output under `out/`. Local models are reached only through OpenAI-compatible
 endpoints (Ollama, llama-server) whose URLs come from the environment; a
-lesson that finds no server prints `SKIP:`.
+lesson that finds no server prints `SKIP:`. Without `EVALS_LOCAL_MODEL`, the
+first chat model the server lists is used. That can be a larger model than
+intended, so the README recommends setting `EVALS_LOCAL_MODEL`.
 
 ## Consequences
 

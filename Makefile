@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 EXAMPLE ?= examples/01_exact_match.py
 LIVE_CORE := examples/04_live_api.py
-LOCAL := $(wildcard examples/0[35689]_*.py examples/11_*.py examples/12_*.py examples/19_*.py)
+LOCAL := $(wildcard examples/0[35689]_*.py examples/1[0-2]_*.py examples/19_*.py)
 export INSPECT_LOG_DIR := out/inspect-logs
 
 .PHONY: help install run format lint typecheck test check-all live-core local redteam clean

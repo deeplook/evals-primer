@@ -47,7 +47,8 @@ LOCAL_BASE_URL=http://localhost:8080/v1 EVALS_LOCAL_MODEL=my-model \
 
 `--local` probes `LOCAL_BASE_URL`, then Ollama (`localhost:11434`), then
 llama-server (`localhost:8080`), and uses `EVALS_LOCAL_MODEL` or the first chat
-model the server lists. With no server it prints `SKIP:`.
+model the server lists. Set `EVALS_LOCAL_MODEL` explicitly: the first listed
+model may be larger than you want. With no server it prints `SKIP:`.
 
 ## Modules
 
@@ -62,15 +63,19 @@ model the server lists. With no server it prints `SKIP:`.
 | `07_toxicity.py` | Measure a word-list toxicity classifier against hand labels |
 | `08_pii_leaks.py` | Planted PII in the system prompt: shape, verbatim, and normalised detectors |
 | `09_refusal.py` | Under-refusal and over-refusal, with a refusal detector checked first |
+| `10_bias_fairness.py` | Counterfactual swaps, combined attributes, and a biased pressure note |
+| `11_llm_as_judge.py` | A rubric judge with `model_graded_qa`, graded against human gold labels |
+| `12_judge_reliability.py` | Pairwise judging in AB and BA order; position flips and Cohen's kappa |
 
 Lessons 01–04 share one question set (`examples/_qa.py`) and change only where
 the answers come from. From lesson 05 on, each lesson writes a small Python
 check, wraps it as an Inspect scorer (`_shared.check_scorer`), and plants the
-cases it must catch. Lessons 05, 06, 08, and 09 also accept `--local` and
-`--live`; they then report what they find instead of asserting it.
+cases it must catch. Lessons 05, 06, and 08–12 also accept `--local` and
+`--live`; they then report what they find instead of asserting it. In 11 and
+12 only the judge changes; the answers and human labels stay fixed, so the
+judge is still measured against gold.
 
-Lessons 10–21 are planned: bias, LLM judges and their reliability,
-direct and indirect injection, jailbreaks, multi-turn red-teaming with garak,
+Lessons 13–21 are planned: direct and indirect injection, jailbreaks, multi-turn red-teaming with garak,
 agent pass^k, guardrail ablation, long context, multilingual checks, and a CI
 gate.
 
