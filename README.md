@@ -35,6 +35,8 @@ make check-all
 ```
 
 That is all the offline path needs: no API key, no GPU, no model server.
+`make hooks` optionally installs a git pre-commit hook that runs basic file
+checks plus `make lint` and `make typecheck`; the tests stay in CI.
 
 Settings are environment variables (listed [below](#environment-variables)).
 To keep them in a file instead, copy the template and uncomment what you need:
@@ -179,6 +181,7 @@ docs/
 out/                generated: Inspect logs, scores.json, garak reports
 work/               local planning notes, not tracked
 .env.example        template for a local, gitignored .env
+.pre-commit-config.yaml  optional hook: file checks, make lint, make typecheck
 Makefile            the commands below
 .github/workflows/  CI: `make check-all`, then `make gate`
 ```
@@ -273,6 +276,7 @@ Browse the logs with `uv run inspect view --log-dir out/inspect-logs`.
 | `gate` | Lesson 21 as a build gate; exits 1 on a missed threshold |
 | `redteam` | Narrow garak scan against a local Ollama model |
 | `redteam-gate` | `redteam`, then lesson 21's gate on the garak report |
+| `hooks` | Install the optional pre-commit hook (via `uvx`) |
 | `clean` | Remove caches and `out/` |
 
 `check-all` does not modify the tree and does not need a network.

@@ -11,7 +11,7 @@ EVALS_LOCAL_MODEL ?= $(or $(call dotenv,EVALS_LOCAL_MODEL),llama3.2:latest)
 GARAK_VERSION := 0.17.1
 GARAK_SPEC ?= $(or $(call dotenv,GARAK_SPEC),probes.promptinject.HijackHateHumans)
 
-.PHONY: help install run format lint typecheck test check-all live-core local gate redteam redteam-gate clean
+.PHONY: help install run format lint typecheck test check-all live-core local gate redteam redteam-gate hooks clean
 
 help: ## Show targets
 	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS=":.*## "}; {printf "  %-12s %s\n", $$1, $$2}'
@@ -56,6 +56,9 @@ redteam: ## Narrow garak scan via uvx against a local Ollama model (lesson 16)
 
 redteam-gate: redteam ## Scan with garak, then gate on its attack-success rates
 	uv run python examples/21_ci_gate.py --gate --garak-report out/garak/evals-primer.report.jsonl
+
+hooks: ## Install the optional git pre-commit hook (via uvx, not in uv.lock)
+	uvx pre-commit install
 
 clean: ## Remove caches and generated output
 	rm -rf .pytest_cache .ruff_cache .mypy_cache out
