@@ -2,10 +2,14 @@
 EXAMPLE ?= examples/01_exact_match.py
 LIVE_CORE := examples/04_live_api.py
 LOCAL := $(wildcard examples/0[3-9]_*.py examples/1[0-9]_*.py examples/2[0-2]_*.py)
-export INSPECT_LOG_DIR := out/inspect-logs
-EVALS_LOCAL_MODEL ?= llama3.2:latest
+# A setting from .env (see .env.example), or empty. `?=` below keeps the
+# precedence the Python code uses: shell or make's command line, then .env,
+# then the default.
+dotenv = $(shell [ -f .env ] && sed -n 's/^$(1)=//p' .env | tail -n 1)
+export INSPECT_LOG_DIR ?= $(or $(call dotenv,INSPECT_LOG_DIR),out/inspect-logs)
+EVALS_LOCAL_MODEL ?= $(or $(call dotenv,EVALS_LOCAL_MODEL),llama3.2:latest)
 GARAK_VERSION := 0.17.1
-GARAK_SPEC ?= probes.promptinject.HijackHateHumans
+GARAK_SPEC ?= $(or $(call dotenv,GARAK_SPEC),probes.promptinject.HijackHateHumans)
 
 .PHONY: help install run format lint typecheck test check-all live-core local gate redteam redteam-gate clean
 

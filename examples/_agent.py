@@ -14,13 +14,12 @@ Inspect process; an agent with real tools belongs in a sandbox (ADR 0003).
 from __future__ import annotations
 
 import json
-import os
 import time
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
-from _shared import live, live_model, local, local_endpoint, run_eval
+from _shared import live, live_model, local, local_endpoint, run_eval, setting
 from agents import (
     Agent,
     InputGuardrailTripwireTriggered,
@@ -79,7 +78,7 @@ Steps = Sequence[ModelStep | list[Any]]
 def agent_model(steps: Steps) -> Model | str:
     """The SDK's ScriptedModel offline, a local server or hosted model otherwise."""
     if live():
-        return os.environ.get("EVALS_AGENT_MODEL", live_model().split("/")[-1])
+        return setting("EVALS_AGENT_MODEL", live_model().split("/")[-1])
     if local():
         base_url, name = local_endpoint()
         client = AsyncOpenAI(base_url=base_url, api_key="local")

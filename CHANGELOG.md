@@ -36,6 +36,9 @@
 - Judge and attacker model roles (`EVALS_JUDGE_MODEL`, `EVALS_ATTACKER_MODEL`,
   ADR 0009), separate from the target. Lesson 07 measures a model classifier
   next to the word list; lessons 11 and 12 take their judge from the role.
+- `.env.example`: settings can live in a gitignored `.env`, loaded by the
+  lessons and the Makefile; the shell still takes precedence, and the tests
+  ignore it.
 - README sections on running lessons, how a lesson works, the repository
   layout, and environment variables; lessons grouped with reading paths; and
   `docs/adding-a-lesson.md`, a checklist for new lessons.

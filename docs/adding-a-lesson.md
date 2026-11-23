@@ -41,6 +41,9 @@ honestly with `--local` or `--live`.
 
 ## Modes and roles
 
+- Read settings with `setting("EVALS_…", default)`, never `os.environ`
+  directly, and add a new one to `.env.example`, the README table, and the
+  tests' `BLANKED` list if it can change an offline run.
 - Choose models through the helpers, never directly:
   - the target: `lesson_model(scripted)` (or `agent_model(steps)` for agents);
   - a judge or attacker: `role_model("judge" | "attacker", scripted)`, which

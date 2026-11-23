@@ -10,6 +10,33 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = sorted((ROOT / "examples").glob("[0-9][0-9]_*.py"))
 
+# Every setting a developer's shell or `.env` might hold. Setting them to ""
+# keeps them blank: `.env` loading never overrides a variable already set, and
+# the lessons read "" as "use the default".
+BLANKED = [
+    "OPENAI_API_KEY",
+    "EVALS_MODEL",
+    "EVALS_AGENT_MODEL",
+    "EVALS_LOCAL_MODEL",
+    "LOCAL_BASE_URL",
+    "EVALS_JUDGE_MODEL",
+    "EVALS_ATTACKER_MODEL",
+    "EVALS_ATTACK_ROUNDS",
+    "EVALS_HAYSTACK_WORDS",
+]
+
+
+def offline_env(tmp_path: Path) -> dict[str, str]:
+    """The scripted, offline environment, with generated files under tmp_path."""
+    return (
+        os.environ
+        | dict.fromkeys(BLANKED, "")
+        | {
+            "INSPECT_LOG_DIR": str(tmp_path),
+            "EVALS_SCORES": str(tmp_path / "scores.json"),
+        }
+    )
+
 
 def test_lessons_exist() -> None:
     assert EXAMPLES, "no numbered lessons found"
@@ -20,12 +47,7 @@ def test_lesson_runs_offline(example: Path, tmp_path: Path) -> None:
     result = subprocess.run(
         [sys.executable, str(example)],
         cwd=ROOT,
-        env=os.environ
-        | {
-            "OPENAI_API_KEY": "",
-            "INSPECT_LOG_DIR": str(tmp_path),
-            "EVALS_SCORES": str(tmp_path / "scores.json"),
-        },
+        env=offline_env(tmp_path),
         text=True,
         capture_output=True,
         timeout=60,
@@ -35,9 +57,8 @@ def test_lesson_runs_offline(example: Path, tmp_path: Path) -> None:
     assert "OK:" in result.stdout or "SKIP:" in result.stdout
 
 
-def test_live_model_default_and_env_override() -> None:
-    environment = os.environ | {"OPENAI_API_KEY": "unused-test-key"}
-    environment.pop("EVALS_MODEL", None)
+def test_live_model_default_and_env_override(tmp_path: Path) -> None:
+    environment = offline_env(tmp_path) | {"OPENAI_API_KEY": "unused-test-key"}
     command = [
         sys.executable,
         "-c",
@@ -61,11 +82,7 @@ def test_live_model_default_and_env_override() -> None:
 
 def test_gate_fails_the_build_on_a_regression(tmp_path: Path) -> None:
     command = [sys.executable, str(ROOT / "examples" / "21_ci_gate.py"), "--gate"]
-    env = os.environ | {
-        "OPENAI_API_KEY": "",
-        "INSPECT_LOG_DIR": str(tmp_path),
-        "EVALS_SCORES": str(tmp_path / "scores.json"),
-    }
+    env = offline_env(tmp_path)
     passing = subprocess.run(
         command, cwd=ROOT, env=env, capture_output=True, text=True, check=False
     )
@@ -87,11 +104,7 @@ def test_gate_fails_on_a_garak_report_over_threshold(tmp_path: Path) -> None:
 
     report = tmp_path / "sample.report.jsonl"
     report.write_text(SAMPLE_REPORT + "\n")
-    env = os.environ | {
-        "OPENAI_API_KEY": "",
-        "INSPECT_LOG_DIR": str(tmp_path),
-        "EVALS_SCORES": str(tmp_path / "scores.json"),
-    }
+    env = offline_env(tmp_path)
     result = subprocess.run(
         [
             sys.executable,

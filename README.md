@@ -36,6 +36,13 @@ make check-all
 
 That is all the offline path needs: no API key, no GPU, no model server.
 
+Settings are environment variables (listed [below](#environment-variables)).
+To keep them in a file instead, copy the template and uncomment what you need:
+
+```bash
+cp .env.example .env   # gitignored; variables set in your shell still win
+```
+
 For real models, either run a local server or set an API key. Locally, the
 lessons were run with [Ollama](https://ollama.com/) on a 24 GB Mac mini:
 
@@ -158,8 +165,8 @@ To add a lesson, see [docs/adding-a-lesson.md](docs/adding-a-lesson.md).
 ```text
 examples/
   NN_name.py        numbered lessons, run directly with `uv run python`
-  _shared.py        run modes, the scripted Inspect model, check_scorer,
-                    run_eval, local-server lookup, judge/attacker roles
+  _shared.py        settings and .env loading, run modes, the scripted Inspect
+                    model, check_scorer, run_eval, local-server lookup, roles
   _qa.py            the question set shared by lessons 01-04
   _agent.py         an Agents SDK agent inside an Inspect solver, with fake
                     tools that record what they did (lessons 14-18)
@@ -171,6 +178,7 @@ docs/
   adding-a-lesson.md
 out/                generated: Inspect logs, scores.json, garak reports
 work/               local planning notes, not tracked
+.env.example        template for a local, gitignored .env
 Makefile            the commands below
 .github/workflows/  CI: `make check-all`, then `make gate`
 ```
@@ -219,6 +227,12 @@ rates per probe. Lesson 21 fails the gate when any probe in the report passed
 with `--garak-report` exceeds 0.2.
 
 ## Environment variables
+
+Set them in your shell or in `.env` (template: `.env.example`). The lessons
+and the Makefile read `.env` from the repo root; a variable already set in
+the shell, or on make's command line, takes precedence, and an empty value
+means the default. The tests blank all model settings, so a `.env` never
+changes an offline run.
 
 | Variable | Default | Used for |
 |---|---|---|

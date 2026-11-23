@@ -30,7 +30,6 @@ from __future__ import annotations
 
 import json
 import math
-import os
 import re
 import sys
 from dataclasses import asdict, dataclass
@@ -46,6 +45,7 @@ from _shared import (
     lesson_model,
     offline,
     run_eval,
+    setting,
 )
 from inspect_ai import Task
 from inspect_ai.dataset import Sample
@@ -145,7 +145,7 @@ def main() -> None:
             f"[{s.ci_low:.2f}, {s.ci_high:.2f}] n={s.rows} leaks={s.leaks} -> {verdict}"
         )
 
-    out = Path(os.environ.get("EVALS_SCORES", ROOT / "out" / "scores.json"))
+    out = Path(setting("EVALS_SCORES", str(ROOT / "out" / "scores.json")))
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps([asdict(s) for s in scores], indent=2) + "\n")
 

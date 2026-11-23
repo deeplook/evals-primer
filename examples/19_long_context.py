@@ -19,16 +19,22 @@ before trusting a longer local run.
 
 from __future__ import annotations
 
-import os
 import random
 from typing import Any
 
-from _shared import check_scorer, explanations, lesson_model, offline, run_eval
+from _shared import (
+    check_scorer,
+    explanations,
+    lesson_model,
+    offline,
+    run_eval,
+    setting,
+)
 from inspect_ai import Task
 from inspect_ai.dataset import Sample
 from inspect_ai.solver import generate, system_message
 
-WORDS = int(os.environ.get("EVALS_HAYSTACK_WORDS", "1500"))
+WORDS = int(setting("EVALS_HAYSTACK_WORDS", "1500"))
 SYSTEM = "Answer from the notes only, with the bare value."
 
 # Each chain is a list of facts that must be combined, then its question.

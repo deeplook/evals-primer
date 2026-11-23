@@ -17,6 +17,7 @@ from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any, NoReturn
 
+from dotenv import load_dotenv
 from inspect_ai import Task
 from inspect_ai import eval as inspect_eval
 from inspect_ai.log import EvalLog
@@ -40,9 +41,22 @@ from inspect_ai.solver import TaskState
 from inspect_ai.tool import ToolChoice, ToolInfo
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# Settings come from the environment, optionally from this repo's `.env`
+# (copy `.env.example`). Variables already set in the shell win. Inspect loads
+# a `.env` too, but only when an eval starts and searching up the directory
+# tree; loading this one first makes our code and Inspect see the same values.
+load_dotenv(ROOT / ".env", override=False)
+
+
+def setting(name: str, default: str) -> str:
+    """An environment setting; unset or empty means the default."""
+    return os.environ.get(name) or default
+
+
 # Keep Inspect's generated logs under out/, which `make clean` removes.
-LOG_DIR = Path(os.environ.get("INSPECT_LOG_DIR", ROOT / "out" / "inspect-logs"))
-LIVE_MODEL = os.environ.get("EVALS_MODEL", "openai/gpt-6-luna")
+LOG_DIR = Path(setting("INSPECT_LOG_DIR", str(ROOT / "out" / "inspect-logs")))
+LIVE_MODEL = setting("EVALS_MODEL", "openai/gpt-6-luna")
 # Probed in order when LOCAL_BASE_URL is unset: Ollama, then llama-server.
 LOCAL_CANDIDATES = ["http://localhost:11434/v1", "http://localhost:8080/v1"]
 

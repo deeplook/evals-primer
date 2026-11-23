@@ -18,6 +18,16 @@ lesson that finds no server prints `SKIP:`. Without `EVALS_LOCAL_MODEL`, the
 first chat model the server lists is used. That can be a larger model than
 intended, so the README recommends setting `EVALS_LOCAL_MODEL`.
 
+Settings are environment variables, optionally kept in a gitignored `.env`
+at the repo root; `.env.example` is the committed template. `_shared.py`
+loads that `.env` at import without overriding the shell, and reads every
+setting through `setting()`, where an empty value means the default. Inspect
+loads a `.env` as well, but only when an eval starts and searching up the
+directory tree; loading ours first keeps our code and Inspect consistent.
+The Makefile reads the few settings it needs from `.env` with the same
+precedence. The tests blank every model setting, so a developer's `.env`
+cannot change an offline run.
+
 ## Consequences
 
 `make check-all` needs no network, keys, GPUs, or model servers. Lessons that
