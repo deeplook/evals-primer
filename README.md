@@ -7,14 +7,16 @@
 Small Python lessons for building LLM evaluation suites from scratch with
 [Inspect](https://inspect.aisi.org.uk/): labelled sets, scorers, judges, and the
 failures that matter in late 2026 — contamination, hallucinated spans, PII
-leaks, bias, prompt injection inside agent loops, and jailbreaks.
+leaks, bias, prompt injection inside agent loops, jailbreaks, and automated
+red-teaming.
 
-**Offline runs test the scorer, not the model.** The default path uses
-Inspect's scripted `mockllm/model`. Every fixture plants known failures, and
-each lesson raises unless its scorers flag exactly those cases. `--live` runs
-the same task against a real model, and the lesson reports numbers instead of
-asserting them. See [docs/adr](docs/adr/README.md) for the decisions behind
-this.
+**Offline runs test the scorer, not the model.** By default every lesson runs
+on a scripted model whose answers plant known failures, and the lesson raises
+unless its checks flag exactly those cases. Pass `--local` (Ollama or
+llama-server) or `--live` (a hosted API) and the same lesson measures a real
+model, reporting numbers instead of asserting them. Judges and attackers are
+separate model roles, so a small target can be graded and attacked by a
+stronger model. The decisions behind this are in [docs/adr](docs/adr/README.md).
 
 It complements the sibling primers: `agents-primer` and `harness-primer` build
 and wrap agents with the OpenAI Agents SDK; this repo measures them.
@@ -23,34 +25,56 @@ covers retrieval metrics, and `llamacpp-primer` runs local models.
 
 ## Setup
 
+You need [uv](https://docs.astral.sh/uv/); it installs Python 3.12 from
+`.python-version`.
+
 ```bash
 uv sync --all-groups
 uv run python examples/01_exact_match.py
 make check-all
 ```
 
-Python 3.12. Offline runs need no API key, no GPU, and no model server.
+That is all the offline path needs: no API key, no GPU, no model server.
+
+For real models, either run a local server or set an API key. Locally, the
+lessons were run with [Ollama](https://ollama.com/) on a 24 GB Mac mini:
 
 ```bash
-export OPENAI_API_KEY="..."
-export EVALS_MODEL=openai/gpt-6-luna   # any Inspect model name
-uv run python examples/04_live_api.py --live
+ollama pull llama3.2          # 2 GB, the target in the examples below
+ollama pull mistral-nemo:12b  # 7 GB, a stronger judge or attacker
 ```
 
-`--live` uses API credits. Without a key it prints `SKIP:` and exits 0.
+## Running lessons
+
+Every lesson runs in one of three modes:
 
 ```bash
-uv run python examples/03_local_model.py --local   # Ollama or llama-server
-LOCAL_BASE_URL=http://localhost:8080/v1 EVALS_LOCAL_MODEL=my-model \
-  uv run python examples/03_local_model.py --local
+uv run python examples/09_refusal.py           # scripted: asserts planted results
+EVALS_LOCAL_MODEL=llama3.2:latest \
+  uv run python examples/09_refusal.py --local  # a local model: reports results
+uv run python examples/09_refusal.py --live    # a hosted model (API credits)
 ```
 
-`--local` probes `LOCAL_BASE_URL`, then Ollama (`localhost:11434`), then
-llama-server (`localhost:8080`), and uses `EVALS_LOCAL_MODEL` or the first chat
-model the server lists. Set `EVALS_LOCAL_MODEL` explicitly: the first listed
-model may be larger than you want. With no server it prints `SKIP:`.
+- **Scripted** (default) plants known failures and asserts that every check
+  catches exactly those. This is what `make check-all` and CI run.
+- **`--local`** probes `LOCAL_BASE_URL`, then Ollama (`localhost:11434`), then
+  llama-server (`localhost:8080`), and uses `EVALS_LOCAL_MODEL`. Set it
+  explicitly: otherwise the first model the server lists is used, which may
+  be larger than you want.
+- **`--live`** uses `EVALS_MODEL` (default `openai/gpt-6-luna`, any Inspect
+  model name) and the provider's key, for example `OPENAI_API_KEY`.
 
-## Modules
+Without a server or a key, a lesson prints `SKIP:` and exits 0. A real model
+is only used when you pass a flag or set a role variable; a lesson never
+reaches for one on its own. Results from a real model vary between runs, and
+on sets this small they show the checks working, not how good the model is.
+
+## Lessons
+
+Read them in order the first time; each group also stands on its own.
+
+**The loop (01–04).** One question set (`examples/_qa.py`); only the source
+of the answers changes.
 
 | File | Topic |
 |---|---|
@@ -58,42 +82,101 @@ model may be larger than you want. With no server it prints `SKIP:`.
 | `02_scripted_model.py` | The same set and scorers as an Inspect task on a scripted model |
 | `03_local_model.py` | The same task against Ollama or llama-server (`--local`) |
 | `04_live_api.py` | The same task against a hosted model (`--live`) |
+
+**Quality and safety checks (05–10).** One check per failure, each tested on
+planted cases before it is trusted.
+
+| File | Topic |
+|---|---|
 | `05_contamination.py` | A public set against a rewritten twin, plus a canary string |
 | `06_span_hallucination.py` | Flag unsupported sentences; ground against the source, not the agent's trace |
-| `07_toxicity.py` | Measure a word-list toxicity classifier against hand labels |
+| `07_toxicity.py` | A word list and a model classifier, both measured against hand labels |
 | `08_pii_leaks.py` | Planted PII in the system prompt: shape, verbatim, and normalised detectors |
 | `09_refusal.py` | Under-refusal and over-refusal, with a refusal detector checked first |
 | `10_bias_fairness.py` | Counterfactual swaps, combined attributes, and a biased pressure note |
+
+**Judges (11–12).** A judge is a model, so it is evaluated too.
+
+| File | Topic |
+|---|---|
 | `11_llm_as_judge.py` | A rubric judge with `model_graded_qa`, graded against human gold labels |
 | `12_judge_reliability.py` | Pairwise judging in AB and BA order; position flips and Cohen's kappa |
+
+**Attacks and agents (13–18).** Lessons 14–18 run an OpenAI Agents SDK agent
+as the system under test (`examples/_agent.py`).
+
+| File | Topic |
+|---|---|
 | `13_direct_injection.py` | Leak and hijack attacks in the user's text; attack success and clean utility |
 | `14_indirect_injection_agent.py` | An injected tool result in an SDK agent loop; attack success and utility together |
 | `15_jailbreaks.py` | Jailbreaks as chat and as an agent; score executed tool calls, not only the reply |
 | `16_multiturn_garak.py` | A crescendo attack against a single-turn ask; read a garak report into attack-success rates |
 | `17_agent_passk.py` | End-state grading, pass@k against pass^k, and what a planner scaffold costs |
 | `18_guardrail_ablation.py` | Guardrails off, static, and stateful against fixed and adaptive attacks |
+
+**Context, language, and CI (19–21).**
+
+| File | Topic |
+|---|---|
 | `19_long_context.py` | Two same-length haystacks: facts side by side against facts scattered |
 | `20_multilingual.py` | Regional facts asked in English and in the local language, scored with aliases |
 | `21_ci_gate.py` | Thresholds that fail the build, with Wilson intervals; writes `out/scores.json` |
+
+**Automated red-teaming (22).**
+
+| File | Topic |
+|---|---|
 | `22_attacker_loop.py` | An attacker model, primed with injection styles, adapts to the target's replies |
 
-Lessons 01–04 share one question set (`examples/_qa.py`) and change only where
-the answers come from. From lesson 05 on, each lesson writes a small Python
-check, wraps it as an Inspect scorer (`_shared.check_scorer`), and plants the
-cases it must catch. Lessons 05–22 also accept `--local` and
-`--live`; they then report what they find instead of asserting it. In 11 and
-12 only the judge changes; the answers and human labels stay fixed, so the
-judge is still measured against gold.
+Shorter paths: *scorers* 01, 02, 05–09; *judges* 07, 11, 12; *red-teaming*
+13, 16, 18, 22 (plus `make redteam`); *agents* 14, 15, 17, 18; *CI* 21.
 
-Lessons 14–18 run an OpenAI Agents SDK agent as the system under test inside
-an Inspect solver (`examples/_agent.py`). Offline, the SDK's `ScriptedModel`
-plays planted tool calls and the SDK executes the tools and guardrails; the
-tools are in-memory fakes that record what they did, and the scorers read that
-ledger rather than the transcript.
+## How a lesson works
 
-`make gate` runs lesson 21 with `--gate`, which exits 1 when the release
-candidate misses a threshold; CI runs it after `make check-all`. Add
-`--regressed` to watch a planted regression fail the build.
+Every numbered lesson has the same shape:
+
+1. **Docstring:** the one idea, what is planted, and what the source papers
+   report.
+2. **Fixture:** a handful of hand-written cases and the scripted model's
+   answers, including the failures the checks must catch (ADR 0002, 0007).
+3. **Check:** a plain Python function `(completion, metadata) -> reason | None`,
+   wrapped as an Inspect scorer by `_shared.check_scorer`. The reason shows up
+   per sample in `inspect view`.
+4. **Run:** an Inspect `Task` through `_shared.run_eval`, on the scripted
+   model, a local server, or a hosted API.
+5. **Assert, scripted only:** the lesson raises unless the checks flagged
+   exactly the planted cases (ADR 0006).
+6. **Report:** one `OK:` line with what was caught or measured. `SKIP:` means
+   a flag, server, or key was missing.
+
+`tests/test_examples.py` runs every lesson in a subprocess and requires a
+clean exit with `OK:` or `SKIP:`; the lesson's own assertions do the checking.
+To add a lesson, see [docs/adding-a-lesson.md](docs/adding-a-lesson.md).
+
+## Repository layout
+
+```text
+examples/
+  NN_name.py        numbered lessons, run directly with `uv run python`
+  _shared.py        run modes, the scripted Inspect model, check_scorer,
+                    run_eval, local-server lookup, judge/attacker roles
+  _qa.py            the question set shared by lessons 01-04
+  _agent.py         an Agents SDK agent inside an Inspect solver, with fake
+                    tools that record what they did (lessons 14-18)
+  _garak.py         reads garak reports into attack-success rates (16, 21)
+tests/
+  test_examples.py  runs every lesson offline; checks the CI gate's exit codes
+docs/
+  adr/              architecture decision records 0001-0009
+  adding-a-lesson.md
+out/                generated: Inspect logs, scores.json, garak reports
+work/               local planning notes, not tracked
+Makefile            the commands below
+.github/workflows/  CI: `make check-all`, then `make gate`
+```
+
+Only `NN_*.py` files are lessons; the tests and `make local` select them by that
+pattern. Helper modules start with `_`.
 
 ## Model roles
 
@@ -135,12 +218,29 @@ make redteam-gate                                       # scan, then gate on it
 rates per probe. Lesson 21 fails the gate when any probe in the report passed
 with `--garak-report` exceeds 0.2.
 
+## Environment variables
+
+| Variable | Default | Used for |
+|---|---|---|
+| `EVALS_LOCAL_MODEL` | first chat model listed | the target with `--local`; the model `make redteam` scans |
+| `LOCAL_BASE_URL` | probe Ollama, then llama-server | the local OpenAI-compatible server |
+| `EVALS_MODEL` | `openai/gpt-6-luna` | the target with `--live` (any Inspect model name) |
+| `EVALS_AGENT_MODEL` | `EVALS_MODEL` without its provider | the Agents SDK model with `--live` (14–18) |
+| `OPENAI_API_KEY` | unset | hosted OpenAI calls; other providers use their own key |
+| `EVALS_JUDGE_MODEL` | follows the target's mode | the judge role (07, 11, 12); `local/<name>` or an Inspect name |
+| `EVALS_ATTACKER_MODEL` | follows the target's mode | the attacker role (22) |
+| `EVALS_ATTACK_ROUNDS` | `5` | lesson 22's round budget per goal |
+| `EVALS_HAYSTACK_WORDS` | `1500` | lesson 19's haystack length |
+| `EVALS_SCORES` | `out/scores.json` | where lesson 21 writes its scores |
+| `INSPECT_LOG_DIR` | `out/inspect-logs` | where Inspect writes eval logs |
+| `GARAK_SPEC` | `probes.promptinject.HijackHateHumans` | the probes `make redteam` runs |
+
 ## Generated files
 
 Inspect writes one log per run to `out/inspect-logs/` (`INSPECT_LOG_DIR`).
 Lesson 21 writes `out/scores.json` (`EVALS_SCORES`), in the shape
-harness-primer lesson 16 reads. `make clean` removes `out/`. Browse logs with `uv run inspect view --log-dir
-out/inspect-logs`.
+harness-primer lesson 16 reads. `make clean` removes `out/`.
+Browse the logs with `uv run inspect view --log-dir out/inspect-logs`.
 
 ## Commands
 

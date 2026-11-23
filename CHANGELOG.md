@@ -36,6 +36,9 @@
 - Judge and attacker model roles (`EVALS_JUDGE_MODEL`, `EVALS_ATTACKER_MODEL`,
   ADR 0009), separate from the target. Lesson 07 measures a model classifier
   next to the word list; lessons 11 and 12 take their judge from the role.
+- README sections on running lessons, how a lesson works, the repository
+  layout, and environment variables; lessons grouped with reading paths; and
+  `docs/adding-a-lesson.md`, a checklist for new lessons.
 - README "Not covered" and a further-reading list of papers checked against
   their sources on 2026-11-23.
 - Offline test harness, Makefile, CI, and the first architecture decision

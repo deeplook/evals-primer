@@ -93,9 +93,13 @@ def scripted_model(
 
 
 def live_model() -> str:
-    """The hosted model name for `--live`; SKIP without a key."""
-    if not os.environ.get("OPENAI_API_KEY"):
-        skip("--live needs OPENAI_API_KEY")
+    """The hosted model name for `--live`; SKIP when its OpenAI key is missing.
+
+    Other providers' keys (for `EVALS_MODEL=anthropic/...` and so on) are
+    checked by Inspect itself when the model is first called.
+    """
+    if LIVE_MODEL.startswith("openai/") and not os.environ.get("OPENAI_API_KEY"):
+        skip(f"--live with {LIVE_MODEL} needs OPENAI_API_KEY")
     return LIVE_MODEL
 
 
