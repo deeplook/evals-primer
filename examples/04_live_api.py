@@ -4,6 +4,10 @@ Only the model argument changes from lesson 02. `EVALS_MODEL` takes any
 Inspect model name (default `openai/gpt-6-luna`) and the provider reads its
 key from the environment. This uses API credits. Without `--live`, or without
 `OPENAI_API_KEY`, it prints `SKIP:`.
+
+openai-primer's `31_prompt_eval.py` evaluates a prompt against the hosted API
+directly; here the same call sits behind Inspect, so the scorers and logs stay
+the same whichever model answers.
 """
 
 from __future__ import annotations

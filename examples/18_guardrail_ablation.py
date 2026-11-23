@@ -36,6 +36,9 @@ the input guardrail blocks it, and that utility loss is part of the result.
 A guardrail runs on the model's raw tool arguments, before the tool validates
 them, so it must parse defensively: a local model sent `count` as the string
 "500", which crashed the first version of this guardrail.
+
+agents-primer lessons 14, 22, and 40 show how to build SDK guardrails; this
+lesson measures them.
 """
 
 from __future__ import annotations

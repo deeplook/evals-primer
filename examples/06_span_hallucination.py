@@ -10,6 +10,9 @@ The last sample is an agent trace. A tool returned a wrong berth count and the
 answer repeated it. Grounded against the *trace*, the answer looks supported.
 Grounded against the *trusted source*, it is not. Evidence has to be the source
 you trust, not whatever the agent happened to read.
+
+This evaluates the generation step. Whether retrieval found the right context
+in the first place is rag-primer's `15_eval_recall.py` (recall@k, MRR).
 """
 
 from __future__ import annotations

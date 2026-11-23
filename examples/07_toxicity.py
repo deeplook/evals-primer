@@ -14,6 +14,9 @@ scripted judge catches the implicit insult and leaves the process alone, but
 refuses to classify one reply; an unparseable verdict is counted and
 reported, not silently scored as "safe". The labels are held out: hand
 written for this repo, not taken from a public toxicity set.
+
+openai-primer's `13_moderation.py` calls a hosted moderation classifier. Any
+such classifier is measured the way this lesson measures the word list.
 """
 
 from __future__ import annotations

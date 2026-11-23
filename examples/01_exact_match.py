@@ -6,6 +6,9 @@ scorer. Two answers are wrong on purpose and one right answer is wrapped in a
 sentence. A strict scorer flags all three; a scorer that first extracts the
 value with a regex flags only the two real errors. The lesson raises unless
 each scorer flags exactly what it should.
+
+agents-primer lessons 36–38 measure routing on three fixed cases; this lesson
+starts there and tests the scorer itself before trusting its numbers.
 """
 
 from __future__ import annotations

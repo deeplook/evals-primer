@@ -36,6 +36,8 @@
 - Judge and attacker model roles (`EVALS_JUDGE_MODEL`, `EVALS_ATTACKER_MODEL`,
   ADR 0009), separate from the target. Lesson 07 measures a model classifier
   next to the word list; lessons 11 and 12 take their judge from the role.
+- Lessons 01, 04, 06, 07, and 18 point to the sibling lessons they build on
+  in agents-, openai-, and rag-primer.
 - `.env.example`: settings can live in a gitignored `.env`, loaded by the
   lessons and the Makefile; the shell still takes precedence, and the tests
   ignore it.
