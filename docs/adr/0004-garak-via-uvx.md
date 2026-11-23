@@ -26,3 +26,9 @@ against `llama3.2` on a Mac mini. The first `uvx` run downloads several
 hundred MB, including torch. Reports go to `out/garak/` through a generated
 config file. garak always writes its own log to `~/.local/share/garak/`, the
 one generated file outside the repo; the README says so.
+
+`examples/_garak.py` reads the report's `eval` lines (`fails` are hits,
+`total_evaluated` the attempts) into attack-success rates per probe. Lesson
+16 parses a hand-written sample report offline and the newest real report
+with `--garak`. Lesson 21 adds a garak threshold to its gate only when given
+`--garak-report`, so the offline gate never depends on a local scan.

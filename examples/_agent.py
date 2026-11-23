@@ -24,6 +24,7 @@ from _shared import live, live_model, local, local_endpoint, run_eval
 from agents import (
     Agent,
     InputGuardrailTripwireTriggered,
+    MaxTurnsExceeded,
     Model,
     OpenAIChatCompletionsModel,
     RunConfig,
@@ -40,6 +41,7 @@ from openai import AsyncOpenAI
 from openai.types.responses import ResponseFunctionToolCall
 
 # One scripted model call costs this much, so offline runs can report tokens.
+MAX_TURNS = 6
 SCRIPTED_USAGE = Usage(requests=1, input_tokens=400, output_tokens=60, total_tokens=460)
 
 
@@ -55,6 +57,9 @@ class Ledger:
     def calls(self, tool: str) -> list[dict[str, Any]]:
         return [args for name, args in self.effects if name == tool]
 
+    def executed(self) -> list[dict[str, Any]]:
+        return [{"tool": name, **args} for name, args in self.effects]
+
 
 @dataclass
 class AgentRun:
@@ -65,6 +70,7 @@ class AgentRun:
     tokens: int
     seconds: float
     blocked: bool = False  # an input guardrail stopped the run
+    stopped: bool = False  # the run hit max_turns, e.g. retrying a blocked tool
 
 
 Steps = Sequence[ModelStep | list[Any]]
@@ -86,22 +92,29 @@ async def run_agent(agent: Agent[Any], prompt: str, ledger: Ledger) -> AgentRun:
     start = time.perf_counter()
     config = RunConfig(tracing_disabled=not live())
     try:
-        result = await Runner.run(agent, prompt, run_config=config, max_turns=6)
+        result = await Runner.run(agent, prompt, run_config=config, max_turns=MAX_TURNS)
     except InputGuardrailTripwireTriggered:
         seconds = time.perf_counter() - start
         return AgentRun("[blocked by input guardrail]", [], [], 0, 0, seconds, True)
+    except MaxTurnsExceeded:
+        # A model that keeps retrying a rejected tool ends here. That is an
+        # outcome to grade on what the ledger says ran, not an eval error.
+        seconds = time.perf_counter() - start
+        return AgentRun(
+            f"[stopped after {MAX_TURNS} turns]", [], ledger.executed(), MAX_TURNS, 0,
+            seconds, stopped=True,
+        )  # fmt: skip
     requested = [
         {"tool": item.raw_item.name, **json.loads(item.raw_item.arguments or "{}")}
         for item in result.new_items
         if isinstance(item, ToolCallItem)
         and isinstance(item.raw_item, ResponseFunctionToolCall)
     ]
-    executed = [{"tool": name, **args} for name, args in ledger.effects]
     usage = result.context_wrapper.usage
     return AgentRun(
         final=str(result.final_output),
         requested=requested,
-        executed=executed,
+        executed=ledger.executed(),
         turns=len(result.raw_responses),
         tokens=usage.total_tokens,
         seconds=time.perf_counter() - start,
@@ -125,6 +138,7 @@ def sdk_solver(run_case: RunCase) -> Solver:
                 tokens=run.tokens,
                 seconds=run.seconds,
                 blocked=run.blocked,
+                stopped=run.stopped,
             )
             state.output = ModelOutput.from_content("openai-agents", run.final)
             return state

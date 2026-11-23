@@ -25,6 +25,11 @@
 - Lessons 19–21: long-context dispersion with same-length haystacks,
   region-aware multilingual checks scored with aliases, and a CI gate with
   Wilson intervals that writes `out/scores.json`. `make gate` runs in CI.
+- Lesson 18 measures guardrails off, static, and with a stateful message
+  budget against two adaptive attacks (reworded, split) as well as the fixed
+  ones, including split calls sent in parallel in one turn and a model that
+  retries a rejected tool until `max_turns`. Lesson 16 reads garak reports through `examples/_garak.py`, and
+  lesson 21 can gate on them with `--garak-report` (`make redteam-gate`).
 - README "Not covered" and a further-reading list of papers checked against
   their sources on 2026-11-23.
 - Offline test harness, Makefile, CI, and the first architecture decision

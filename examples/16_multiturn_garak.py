@@ -9,21 +9,27 @@ checked. The compliant reply is a stub (ADR 0007).
 
 Part 2: garak sends many known attack prompts and scores the replies with its
 own detectors. It is a scanner, not this repo's harness, and it is heavy, so
-it runs via `uvx` from `make redteam` against a local model (ADR 0004). This
-script only prints how to run it.
+it runs via `uvx` from `make redteam` against a local model (ADR 0004). Its
+results only matter if something reads them: `_garak.read_report` turns the
+report into attack-success rates per probe, and lesson 21 can gate on them.
+Offline, the lesson parses a hand-written sample report; with `--garak` it
+reads the newest report that `make redteam` wrote to `out/garak/`.
 """
 
 from __future__ import annotations
 
 import re
+import sys
 from typing import Any
 
+from _garak import SAMPLE_REPORT, latest_report, read_report, read_report_file
 from _shared import (
     check_scorer,
     explanations,
     lesson_model,
     offline,
     run_eval,
+    skip,
 )
 from inspect_ai import Task
 from inspect_ai.dataset import Sample
@@ -101,7 +107,22 @@ def main() -> None:
         f"OK: single-turn success={int('single' in broke)}/1, "
         f"multi-turn success={len(broke - {'single'})}/2 {sorted(broke)}"
     )
-    print("SKIP: garak scan; run `make redteam` with a local model (Ollama)")
+    if "--garak" in sys.argv:
+        path = latest_report()
+        if path is None:
+            skip("no garak report in out/garak; run `make redteam` first")
+        results, source = read_report_file(path), path.name
+    else:
+        results, source = read_report(SAMPLE_REPORT.splitlines()), "sample report"
+        rates = [r.attack_success for r in results]
+        if rates != [0.4, 0.1]:
+            raise AssertionError(f"sample report parsed as {rates}")
+    for r in results:
+        ci = f" [{r.ci_low:.2f}, {r.ci_high:.2f}]" if r.ci_low is not None else ""
+        print(
+            f"  {r.probe} / {r.detector}: {r.hits}/{r.total} hits = {r.attack_success:.2f}{ci}"
+        )
+    print(f"OK: read {len(results)} garak probe results from the {source}")
 
 
 if __name__ == "__main__":

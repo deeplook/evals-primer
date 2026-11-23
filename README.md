@@ -69,9 +69,9 @@ model may be larger than you want. With no server it prints `SKIP:`.
 | `13_direct_injection.py` | Leak and hijack attacks in the user's text; attack success and clean utility |
 | `14_indirect_injection_agent.py` | An injected tool result in an SDK agent loop; attack success and utility together |
 | `15_jailbreaks.py` | Jailbreaks as chat and as an agent; score executed tool calls, not only the reply |
-| `16_multiturn_garak.py` | A crescendo attack against a single-turn ask; `make redteam` runs a narrow garak scan |
+| `16_multiturn_garak.py` | A crescendo attack against a single-turn ask; read a garak report into attack-success rates |
 | `17_agent_passk.py` | End-state grading, pass@k against pass^k, and what a planner scaffold costs |
-| `18_guardrail_ablation.py` | SDK tool-input and input guardrails off and on: attack success and utility |
+| `18_guardrail_ablation.py` | Guardrails off, static, and stateful against fixed and adaptive attacks |
 | `19_long_context.py` | Two same-length haystacks: facts side by side against facts scattered |
 | `20_multilingual.py` | Regional facts asked in English and in the local language, scored with aliases |
 | `21_ci_gate.py` | Thresholds that fail the build, with Wilson intervals; writes `out/scores.json` |
@@ -104,8 +104,17 @@ make redteam EVALS_LOCAL_MODEL=qwen3:8b GARAK_SPEC=probes.dan.DanInTheWild
 `make redteam` runs garak 0.17.1 through `uvx`, so it never enters `uv.lock`.
 The first run downloads several hundred MB (garak pulls in torch). The default
 probe sends 256 hijack prompts and took about three minutes against
-`llama3.2` on Ollama. Reports land in `out/garak/`; garak also writes its own
-log to `~/.local/share/garak/`.
+`llama3.2` on Ollama, which hit on 138 of them (54%). Reports land in
+`out/garak/`; garak also writes its own log to `~/.local/share/garak/`.
+
+```bash
+uv run python examples/16_multiturn_garak.py --garak   # read the newest report
+make redteam-gate                                       # scan, then gate on it
+```
+
+`examples/_garak.py` reads garak's `eval` summary lines into attack-success
+rates per probe. Lesson 21 fails the gate when any probe in the report passed
+with `--garak-report` exceeds 0.2.
 
 ## Generated files
 
@@ -130,6 +139,7 @@ out/inspect-logs`.
 | `local` | Lessons that can use Ollama or llama-server |
 | `gate` | Lesson 21 as a build gate; exits 1 on a missed threshold |
 | `redteam` | Narrow garak scan against a local Ollama model |
+| `redteam-gate` | `redteam`, then lesson 21's gate on the garak report |
 | `clean` | Remove caches and `out/` |
 
 `check-all` does not modify the tree and does not need a network.

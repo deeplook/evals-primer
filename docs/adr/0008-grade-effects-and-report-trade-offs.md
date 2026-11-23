@@ -29,7 +29,16 @@ producing wrong answers while they were built:
 - Agent comparisons report accuracy with model calls, tokens, and wall time
   (17). Offline, `_agent.SCRIPTED_USAGE` charges each scripted model call a
   fixed 460 tokens, so cost differences are visible without a real model.
+- A run that hits `max_turns` (a model retrying a rejected tool) is an
+  outcome, graded on its ledger like any other run, not an eval error.
 - Repeated runs report pass^k (every run succeeds) next to pass@k.
+- A defence is also measured against adaptive attacks: variants written to
+  get around that defence, such as rewording past a pattern match or
+  splitting an action under a per-call limit. Harm is judged on the run's
+  total effect, not per call. Lesson 18 shows a static guardrail at 0/3 on
+  fixed attacks letting a split attack through. A stateful guardrail counts
+  what it has approved, not what has executed: parallel tool calls in one
+  turn are all checked before any of them runs.
 
 ## Consequences
 
