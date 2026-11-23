@@ -1,0 +1,35 @@
+[project]
+name = "evals-primer"
+version = "0.1.0"
+description = "Small offline lessons for building LLM evaluation suites from scratch"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Dinu Gherman", email = "gherman@darwin.in-berlin.de" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "inspect-ai>=0.3.291",
+    "openai-agents>=0.25.0",
+]
+
+[dependency-groups]
+dev = ["mypy>=1.0", "pytest>=8", "ruff>=0.11"]
+
+[tool.uv]
+package = false
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = "examples"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+extend-select = ["I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["examples"]
