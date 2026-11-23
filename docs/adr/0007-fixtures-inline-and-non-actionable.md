@@ -26,7 +26,9 @@ content.
   that marker.
 - Jailbreak lessons that use a public benchmark refer to a small subset by
   behaviour ID and fetch nothing at test time. Benchmark prompts are not
-  copied into the repo.
+  copied into the repo. An ID is added only after it is checked against the
+  published set; until then a lesson names the benchmark without IDs, as
+  lesson 15 does.
 - garak output goes to `out/`, which is gitignored.
 
 ## Consequences

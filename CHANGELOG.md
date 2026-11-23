@@ -17,5 +17,10 @@
 - Lessons 10–12: bias (single swaps, combined attributes, pressure notes),
   an LLM judge via `model_graded_qa` measured against gold labels, and
   pairwise judge reliability with AB/BA position flips and Cohen's kappa.
+- Lessons 13–18: direct injection, indirect injection in an SDK agent loop,
+  jailbreaks scored on executed tool calls, a multi-turn crescendo attack,
+  end-state grading with pass@k and pass^k plus scaffold cost, and an SDK
+  guardrail ablation. `examples/_agent.py` runs the agent inside an Inspect
+  solver. `make redteam` runs a narrow garak scan via `uvx`.
 - Offline test harness, Makefile, CI, and the first architecture decision
   records under `docs/adr/`.

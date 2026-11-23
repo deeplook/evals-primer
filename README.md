@@ -66,18 +66,41 @@ model may be larger than you want. With no server it prints `SKIP:`.
 | `10_bias_fairness.py` | Counterfactual swaps, combined attributes, and a biased pressure note |
 | `11_llm_as_judge.py` | A rubric judge with `model_graded_qa`, graded against human gold labels |
 | `12_judge_reliability.py` | Pairwise judging in AB and BA order; position flips and Cohen's kappa |
+| `13_direct_injection.py` | Leak and hijack attacks in the user's text; attack success and clean utility |
+| `14_indirect_injection_agent.py` | An injected tool result in an SDK agent loop; attack success and utility together |
+| `15_jailbreaks.py` | Jailbreaks as chat and as an agent; score executed tool calls, not only the reply |
+| `16_multiturn_garak.py` | A crescendo attack against a single-turn ask; `make redteam` runs a narrow garak scan |
+| `17_agent_passk.py` | End-state grading, pass@k against pass^k, and what a planner scaffold costs |
+| `18_guardrail_ablation.py` | SDK tool-input and input guardrails off and on: attack success and utility |
 
 Lessons 01–04 share one question set (`examples/_qa.py`) and change only where
 the answers come from. From lesson 05 on, each lesson writes a small Python
 check, wraps it as an Inspect scorer (`_shared.check_scorer`), and plants the
-cases it must catch. Lessons 05, 06, and 08–12 also accept `--local` and
+cases it must catch. Lessons 05, 06, and 08–18 also accept `--local` and
 `--live`; they then report what they find instead of asserting it. In 11 and
 12 only the judge changes; the answers and human labels stay fixed, so the
 judge is still measured against gold.
 
-Lessons 13–21 are planned: direct and indirect injection, jailbreaks, multi-turn red-teaming with garak,
-agent pass^k, guardrail ablation, long context, multilingual checks, and a CI
-gate.
+Lessons 14–18 run an OpenAI Agents SDK agent as the system under test inside
+an Inspect solver (`examples/_agent.py`). Offline, the SDK's `ScriptedModel`
+plays planted tool calls and the SDK executes the tools and guardrails; the
+tools are in-memory fakes that record what they did, and the scorers read that
+ledger rather than the transcript.
+
+Lessons 19–21 are planned: long context, multilingual checks, and a CI gate.
+
+## Red-teaming with garak
+
+```bash
+make redteam                                   # llama3.2:latest on Ollama
+make redteam EVALS_LOCAL_MODEL=qwen3:8b GARAK_SPEC=probes.dan.DanInTheWild
+```
+
+`make redteam` runs garak 0.17.1 through `uvx`, so it never enters `uv.lock`.
+The first run downloads several hundred MB (garak pulls in torch). The default
+probe sends 256 hijack prompts and took about three minutes against
+`llama3.2` on Ollama. Reports land in `out/garak/`; garak also writes its own
+log to `~/.local/share/garak/`.
 
 ## Generated files
 
@@ -99,6 +122,7 @@ out/inspect-logs`.
 | `check-all` | `lint`, then `typecheck`, then `test` |
 | `live-core` | Hosted-API lessons with `--live` (uses API credits) |
 | `local` | Lessons that can use Ollama or llama-server |
+| `redteam` | Narrow garak scan against a local Ollama model |
 | `clean` | Remove caches and `out/` |
 
 `check-all` does not modify the tree and does not need a network.

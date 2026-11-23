@@ -17,4 +17,12 @@ scripted multi-turn attack and prints `SKIP:` for the scan.
 ## Consequences
 
 `uv.lock` stays small and CI never installs garak. The garak version is not
-locked with the project; the Makefile target pins it explicitly.
+locked with the project; the Makefile pins it (`GARAK_VERSION := 0.17.1`).
+
+`make redteam` targets Ollama (`--target_type ollama`, model from
+`EVALS_LOCAL_MODEL`) with `GARAK_SPEC`, by default
+`probes.promptinject.HijackHateHumans`: 256 prompts, about three minutes
+against `llama3.2` on a Mac mini. The first `uvx` run downloads several
+hundred MB, including torch. Reports go to `out/garak/` through a generated
+config file. garak always writes its own log to `~/.local/share/garak/`, the
+one generated file outside the repo; the README says so.

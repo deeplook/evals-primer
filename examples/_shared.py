@@ -72,8 +72,10 @@ def scripted_model(
     """An Inspect mock model that answers each prompt from a fixture table.
 
     Keyed by prompt, not call order, because Inspect may run samples
-    concurrently. `key` extracts the lookup key from a longer prompt, for
-    example the submission inside a judge's grading template.
+    concurrently. The prompt is every user turn joined by newlines, so a
+    multi-turn conversation has its own key. `key` extracts the lookup key from
+    a longer prompt, for example the submission inside a judge's grading
+    template.
     """
 
     def respond(
@@ -82,7 +84,7 @@ def scripted_model(
         tool_choice: ToolChoice,
         config: GenerateConfig,
     ) -> ModelOutput:
-        prompt = key(messages[-1].text)
+        prompt = key("\n".join(m.text for m in messages if m.role == "user"))
         if prompt not in outputs:
             raise KeyError(f"no scripted output for prompt: {prompt!r}")
         return ModelOutput.from_content(model="mockllm", content=outputs[prompt])
@@ -106,8 +108,8 @@ def _list_models(base_url: str) -> list[str] | None:
     return [str(entry["id"]) for entry in payload.get("data", [])]
 
 
-def local_model() -> Model:
-    """A model on a local OpenAI-compatible server for `--local`; SKIP if none."""
+def local_endpoint() -> tuple[str, str]:
+    """(base URL, model name) of a local OpenAI-compatible server; SKIP if none."""
     if not local():
         skip("pass --local to use Ollama or llama-server")
     configured = os.environ.get("LOCAL_BASE_URL")
@@ -119,8 +121,14 @@ def local_model() -> Model:
         name = os.environ.get("EVALS_LOCAL_MODEL") or (chat[0] if chat else None)
         if name is None:
             skip(f"{base_url} lists no chat model")
-        return get_model(f"openai-api/local/{name}", base_url=base_url, api_key="local")
+        return base_url, name
     skip("no local OpenAI-compatible server found")
+
+
+def local_model() -> Model:
+    """A model on a local OpenAI-compatible server for `--local`; SKIP if none."""
+    base_url, name = local_endpoint()
+    return get_model(f"openai-api/local/{name}", base_url=base_url, api_key="local")
 
 
 def lesson_model(

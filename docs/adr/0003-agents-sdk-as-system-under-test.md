@@ -20,6 +20,13 @@ pass-rate follow-up; harness-primer's README and roadmap are updated to point
 here once those lessons exist. When the model is adversarial and Inspect drives
 the agent, use `sandbox_agent_bridge()`, not the in-process `agent_bridge()`.
 
+Lessons 14–18 run the agent through `_agent.sdk_solver`, a custom Inspect
+solver that calls `Runner.run` with the SDK's `ScriptedModel` offline. That
+keeps the SDK's own scripted model, which `agent_bridge()` would replace with
+an Inspect model. It is safe in process only because every tool is an
+in-memory fake that appends to a ledger; an agent with real tools would need
+`sandbox_agent_bridge()` or a container.
+
 ## Consequences
 
 `openai-agents` is a runtime dependency. Lesson 21's gate can produce the score

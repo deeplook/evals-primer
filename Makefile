@@ -1,8 +1,11 @@
 .DEFAULT_GOAL := help
 EXAMPLE ?= examples/01_exact_match.py
 LIVE_CORE := examples/04_live_api.py
-LOCAL := $(wildcard examples/0[35689]_*.py examples/1[0-2]_*.py examples/19_*.py)
+LOCAL := $(wildcard examples/0[35689]_*.py examples/1[0-8]_*.py examples/19_*.py)
 export INSPECT_LOG_DIR := out/inspect-logs
+EVALS_LOCAL_MODEL ?= llama3.2:latest
+GARAK_VERSION := 0.17.1
+GARAK_SPEC ?= probes.promptinject.HijackHateHumans
 
 .PHONY: help install run format lint typecheck test check-all live-core local redteam clean
 
@@ -37,8 +40,12 @@ live-core: ## Run the hosted-API lessons against EVALS_MODEL (uses API credits)
 local: ## Run lessons that can use a local Ollama or llama-server
 	@for example in $(LOCAL); do uv run python $$example --local || exit $$?; done
 
-redteam: ## Narrow garak scan via uvx against a local model (lesson 16)
-	@echo "Not implemented yet: arrives with lesson 16."
+redteam: ## Narrow garak scan via uvx against a local Ollama model (lesson 16)
+	@mkdir -p out/garak
+	@printf 'reporting:\n  report_dir: %s\n' "$(CURDIR)/out/garak" > out/garak/config.yaml
+	uvx --from garak==$(GARAK_VERSION) garak --target_type ollama \
+		--target_name $(EVALS_LOCAL_MODEL) --spec $(GARAK_SPEC) --generations 1 \
+		--report_prefix evals-primer --config out/garak/config.yaml
 
 clean: ## Remove caches and generated output
 	rm -rf .pytest_cache .ruff_cache .mypy_cache out

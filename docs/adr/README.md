@@ -12,3 +12,4 @@ belongs in the lesson docstring.
 | [0005](0005-script-only-primer-layout.md) | Script-only primer layout and local endpoints |
 | [0006](0006-run-modes-and-assertions.md) | What each run mode asserts |
 | [0007](0007-fixtures-inline-and-non-actionable.md) | Fixtures are inline, hand-written, and never actionable |
+| [0008](0008-grade-effects-and-report-trade-offs.md) | Grade executed effects, and never report a safety number alone |
