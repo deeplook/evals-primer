@@ -13,9 +13,9 @@ import os
 import sys
 import urllib.error
 import urllib.request
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from pathlib import Path
-from typing import NoReturn
+from typing import Any, NoReturn
 
 from inspect_ai import Task
 from inspect_ai import eval as inspect_eval
@@ -27,6 +27,16 @@ from inspect_ai.model import (
     ModelOutput,
     get_model,
 )
+from inspect_ai.scorer import (
+    CORRECT,
+    INCORRECT,
+    Score,
+    Scorer,
+    Target,
+    accuracy,
+    scorer,
+)
+from inspect_ai.solver import TaskState
 from inspect_ai.tool import ToolChoice, ToolInfo
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,6 +53,11 @@ def live() -> bool:
 
 def local() -> bool:
     return "--local" in sys.argv
+
+
+def offline() -> bool:
+    """True on the default scripted path, where planted results are asserted."""
+    return not (live() or local())
 
 
 def skip(reason: str) -> NoReturn:
@@ -105,6 +120,42 @@ def local_model() -> Model:
     skip("no local OpenAI-compatible server found")
 
 
+def lesson_model(outputs: Mapping[str, str]) -> Model | str:
+    """Scripted by default, a local server with `--local`, a hosted API with `--live`."""
+    if live():
+        return live_model()
+    if local():
+        return local_model()
+    return scripted_model(outputs)
+
+
+# A check returns None when the sample passes, or a short reason when it fails.
+Check = Callable[[str, dict[str, Any]], str | None]
+
+
+def check_scorer(name: str, check: Check) -> Scorer:
+    """Wrap a plain Python check as a named Inspect scorer.
+
+    The check sees the model's completion and the sample's metadata. Its reason
+    becomes the score's explanation, which `inspect view` shows per sample.
+    """
+
+    @scorer(metrics=[accuracy()], name=name)
+    def factory() -> Scorer:
+        async def score(state: TaskState, target: Target) -> Score:
+            completion = state.output.completion
+            reason = check(completion, state.metadata)
+            return Score(
+                value=CORRECT if reason is None else INCORRECT,
+                answer=completion,
+                explanation=reason,
+            )
+
+        return score
+
+    return factory()
+
+
 def run_eval(task: Task, model: Model | str) -> EvalLog:
     """Run one task quietly and return its log; raise if the run itself failed."""
     [log] = inspect_eval(task, model=model, display="none", log_dir=str(LOG_DIR))
@@ -120,3 +171,17 @@ def failed_ids(log: EvalLog, scorer: str) -> set[str]:
         for sample in log.samples or []
         if sample.scores and sample.scores[scorer].value != "C"
     }
+
+
+def explanations(log: EvalLog, scorer: str) -> dict[str, str]:
+    """Failure reasons by sample ID for the named scorer."""
+    return {
+        str(sample.id): sample.scores[scorer].explanation or ""
+        for sample in log.samples or []
+        if sample.scores and sample.scores[scorer].value != "C"
+    }
+
+
+def completions(log: EvalLog) -> dict[str, str]:
+    """The model's final answer by sample ID."""
+    return {str(sample.id): sample.output.completion for sample in log.samples or []}
