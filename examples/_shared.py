@@ -108,21 +108,28 @@ def _list_models(base_url: str) -> list[str] | None:
     return [str(entry["id"]) for entry in payload.get("data", [])]
 
 
-def local_endpoint() -> tuple[str, str]:
+def find_local_server(wanted: str | None = None) -> tuple[str, str]:
     """(base URL, model name) of a local OpenAI-compatible server; SKIP if none."""
-    if not local():
-        skip("pass --local to use Ollama or llama-server")
     configured = os.environ.get("LOCAL_BASE_URL")
     for base_url in [configured] if configured else LOCAL_CANDIDATES:
         names = _list_models(base_url)
         if names is None:
             continue
         chat = [name for name in names if "embed" not in name]
-        name = os.environ.get("EVALS_LOCAL_MODEL") or (chat[0] if chat else None)
+        name = wanted or (chat[0] if chat else None)
         if name is None:
             skip(f"{base_url} lists no chat model")
+        if wanted and wanted not in names:
+            skip(f"{base_url} does not list {wanted}")
         return base_url, name
     skip("no local OpenAI-compatible server found")
+
+
+def local_endpoint() -> tuple[str, str]:
+    """The target model's local server for `--local`; SKIP if none."""
+    if not local():
+        skip("pass --local to use Ollama or llama-server")
+    return find_local_server(os.environ.get("EVALS_LOCAL_MODEL"))
 
 
 def local_model() -> Model:
@@ -167,6 +174,34 @@ def check_scorer(name: str, check: Check) -> Scorer:
         return score
 
     return factory()
+
+
+# Roles other than the target: who grades, and who attacks (ADR 0009).
+ROLE_VARIABLES = {"judge": "EVALS_JUDGE_MODEL", "attacker": "EVALS_ATTACKER_MODEL"}
+
+
+def role_model(
+    role: str,
+    outputs: Mapping[str, str],
+    key: Callable[[str], str] = lambda prompt: prompt,
+) -> tuple[Model, bool]:
+    """The model for a judge or attacker role, and whether it is scripted.
+
+    `EVALS_JUDGE_MODEL` / `EVALS_ATTACKER_MODEL` choose it: `local/<name>` is a
+    model on the local server, anything else an Inspect model name (for
+    example `openai/gpt-6.1-terra`). Unset, the role follows `--local` and
+    `--live` like the target, and is otherwise scripted.
+    """
+    name = os.environ.get(ROLE_VARIABLES[role], "")
+    if name.startswith("local/"):
+        base_url, model = find_local_server(name.removeprefix("local/"))
+        return get_model(
+            f"openai-api/local/{model}", base_url=base_url, api_key="local"
+        ), False
+    if name:
+        return get_model(name), False
+    chosen = lesson_model(outputs, key)
+    return (get_model(chosen) if isinstance(chosen, str) else chosen), offline()
 
 
 def run_eval(task: Task, model: Model | str) -> EvalLog:

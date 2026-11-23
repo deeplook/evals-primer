@@ -12,14 +12,15 @@ fails a terse, correct one. Agreement with gold, the false-pass rate, and the
 false-fail rate tell you whether the judge's numbers can be trusted.
 
 The answers stay scripted in every mode, so the gold labels always apply.
-`--local` or `--live` replaces only the judge, and the lesson measures it.
+`--local`, `--live`, or `EVALS_JUDGE_MODEL` (for example
+`local/mistral-nemo:12b`) replaces only the judge, and the lesson measures it.
 """
 
 from __future__ import annotations
 
 import re
 
-from _shared import lesson_model, offline, run_eval, scripted_model
+from _shared import role_model, run_eval, scripted_model
 from inspect_ai import Task
 from inspect_ai.dataset import Sample
 from inspect_ai.scorer import model_graded_qa
@@ -69,7 +70,7 @@ def submission(judge_prompt: str) -> str:
 
 def main() -> None:
     answers = {question: answer for _, question, _, answer, _ in CASES}
-    judge = lesson_model(JUDGE, key=submission)
+    judge, scripted = role_model("judge", JUDGE, key=submission)
     task = Task(
         dataset=[
             Sample(id=key, input=question, target=reference)
@@ -89,7 +90,7 @@ def main() -> None:
     false_fail = {k for k in gold if not grade[k] and gold[k]}
     agreement = 1 - (len(false_pass) + len(false_fail)) / len(gold)
 
-    if offline() and (
+    if scripted and (
         false_pass != EXPECTED_FALSE_PASS or false_fail != EXPECTED_FALSE_FAIL
     ):
         raise AssertionError(f"false pass={false_pass} false fail={false_fail}")

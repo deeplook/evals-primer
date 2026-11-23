@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 EXAMPLE ?= examples/01_exact_match.py
 LIVE_CORE := examples/04_live_api.py
-LOCAL := $(wildcard examples/0[35689]_*.py examples/1[0-9]_*.py examples/2[01]_*.py)
+LOCAL := $(wildcard examples/0[3-9]_*.py examples/1[0-9]_*.py examples/2[0-2]_*.py)
 export INSPECT_LOG_DIR := out/inspect-logs
 EVALS_LOCAL_MODEL ?= llama3.2:latest
 GARAK_VERSION := 0.17.1

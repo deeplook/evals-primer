@@ -30,6 +30,11 @@
   ones, including split calls sent in parallel in one turn and a model that
   retries a rejected tool until `max_turns`. Lesson 16 reads garak reports through `examples/_garak.py`, and
   lesson 21 can gate on them with `--garak-report` (`make redteam-gate`).
+- Lesson 22: an attacker model rewrites its attack each round from the
+  target's replies, within a round budget, against benign marker goals.
+- Judge and attacker model roles (`EVALS_JUDGE_MODEL`, `EVALS_ATTACKER_MODEL`,
+  ADR 0009), separate from the target. Lesson 07 measures a model classifier
+  next to the word list; lessons 11 and 12 take their judge from the role.
 - README "Not covered" and a further-reading list of papers checked against
   their sources on 2026-11-23.
 - Offline test harness, Makefile, CI, and the first architecture decision

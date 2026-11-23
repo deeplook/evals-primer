@@ -75,11 +75,12 @@ model may be larger than you want. With no server it prints `SKIP:`.
 | `19_long_context.py` | Two same-length haystacks: facts side by side against facts scattered |
 | `20_multilingual.py` | Regional facts asked in English and in the local language, scored with aliases |
 | `21_ci_gate.py` | Thresholds that fail the build, with Wilson intervals; writes `out/scores.json` |
+| `22_attacker_loop.py` | An attacker model adapts to the target's replies within a round budget |
 
 Lessons 01–04 share one question set (`examples/_qa.py`) and change only where
 the answers come from. From lesson 05 on, each lesson writes a small Python
 check, wraps it as an Inspect scorer (`_shared.check_scorer`), and plants the
-cases it must catch. Lessons 05, 06, and 08–21 also accept `--local` and
+cases it must catch. Lessons 05–22 also accept `--local` and
 `--live`; they then report what they find instead of asserting it. In 11 and
 12 only the judge changes; the answers and human labels stay fixed, so the
 judge is still measured against gold.
@@ -93,6 +94,24 @@ ledger rather than the transcript.
 `make gate` runs lesson 21 with `--gate`, which exits 1 when the release
 candidate misses a threshold; CI runs it after `make check-all`. Add
 `--regressed` to watch a planted regression fail the build.
+
+## Model roles
+
+`--local` and `--live` choose the *target*, the model under test. Judges and
+attackers are separate roles (ADR 0009), so a small target can be graded and
+attacked by a stronger model:
+
+```bash
+EVALS_JUDGE_MODEL=local/mistral-nemo:12b uv run python examples/11_llm_as_judge.py
+EVALS_ATTACKER_MODEL=local/mistral-nemo:12b EVALS_LOCAL_MODEL=llama3.2:latest \
+  uv run python examples/22_attacker_loop.py --local
+```
+
+`local/<name>` is a model on the local server; any other value is an Inspect
+model name, so a hosted model (`openai/gpt-6.1-terra`) works the same way.
+The judge role is used by lessons 07, 11, and 12, the attacker by 22. A 12B
+judge or attacker fits beside a 3B target on a 24 GB machine. Lesson 22 runs
+at most `EVALS_ATTACK_ROUNDS` rounds (default 5) and prints its model calls.
 
 ## Red-teaming with garak
 
@@ -157,8 +176,9 @@ out/inspect-logs`.
   fake tools, not a sandbox.
 - **Production observability.** No tracing backend, dashboard, or pass-rate
   history over time; Inspect logs in `out/` are the only record.
-- **Serious red-teaming.** `make redteam` runs one narrow garak probe. PyRIT,
-  promptfoo, and adaptive attack search are left to their own docs.
+- **Serious red-teaming.** `make redteam` runs one narrow garak probe, and
+  lesson 22's attacker loop is a few rounds against benign markers. PyRIT,
+  promptfoo, and large-scale strategy search are left to their own docs.
 - **Model rankings.** The `llama3.2` results quoted in lesson docstrings and
   commit messages are single runs of a 3B model; they show the checks working
   on real output, not how good any model is.

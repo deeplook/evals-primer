@@ -13,3 +13,4 @@ belongs in the lesson docstring.
 | [0006](0006-run-modes-and-assertions.md) | What each run mode asserts |
 | [0007](0007-fixtures-inline-and-non-actionable.md) | Fixtures are inline, hand-written, and never actionable |
 | [0008](0008-grade-effects-and-report-trade-offs.md) | Grade executed effects, and never report a safety number alone |
+| [0009](0009-model-roles.md) | Target, judge, and attacker are separate model roles |

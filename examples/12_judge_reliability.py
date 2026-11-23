@@ -11,13 +11,13 @@ chance agreement: 1 is perfect, 0 is no better than chance.
 
 The scripted judge always answers "A" on three of eight pairs. In AB order
 alone it looks 75% right; kappa is under 0.5, and the BA order exposes all
-three flips. `--local` or `--live` swaps in a real judge; the answers and
-human labels are fixed, so the comparison still holds.
+three flips. `--local`, `--live`, or `EVALS_JUDGE_MODEL` swaps in a real
+judge; the answers and human labels are fixed, so the comparison still holds.
 """
 
 from __future__ import annotations
 
-from _shared import completions, lesson_model, offline, run_eval
+from _shared import completions, role_model, run_eval
 from inspect_ai import Task
 from inspect_ai.dataset import Sample
 from inspect_ai.solver import generate, system_message
@@ -83,7 +83,8 @@ def main() -> None:
         dataset.append(Sample(id=f"{key}-xy", input=prompt(question, x, y)))
         dataset.append(Sample(id=f"{key}-yx", input=prompt(question, y, x)))
     task = Task(dataset=dataset, solver=[system_message(SYSTEM), generate()])
-    replies = completions(run_eval(task, lesson_model(scripted_verdicts())))
+    judge, scripted = role_model("judge", scripted_verdicts())
+    replies = completions(run_eval(task, judge))
 
     human = [h for *_, h in PAIRS]
     ab = [winner(replies[f"{k}-xy"], "xy") for k, *_ in PAIRS]
@@ -96,7 +97,7 @@ def main() -> None:
     ]
     consistent = sum(j == h for j, h in kept) / len(kept) if kept else 0.0
 
-    if offline() and (flips != POSITION_BIASED or not kappa < raw):
+    if scripted and (flips != POSITION_BIASED or not kappa < raw):
         raise AssertionError(f"flips={flips} raw={raw} kappa={kappa}")
     print(
         f"OK: AB-only agreement={raw:.2f} kappa={kappa:.2f}; "
