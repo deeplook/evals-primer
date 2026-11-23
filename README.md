@@ -75,7 +75,7 @@ model may be larger than you want. With no server it prints `SKIP:`.
 | `19_long_context.py` | Two same-length haystacks: facts side by side against facts scattered |
 | `20_multilingual.py` | Regional facts asked in English and in the local language, scored with aliases |
 | `21_ci_gate.py` | Thresholds that fail the build, with Wilson intervals; writes `out/scores.json` |
-| `22_attacker_loop.py` | An attacker model adapts to the target's replies within a round budget |
+| `22_attacker_loop.py` | An attacker model, primed with injection styles, adapts to the target's replies |
 
 Lessons 01–04 share one question set (`examples/_qa.py`) and change only where
 the answers come from. From lesson 05 on, each lesson writes a small Python
