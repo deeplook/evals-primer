@@ -1,13 +1,13 @@
 .DEFAULT_GOAL := help
 EXAMPLE ?= examples/01_exact_match.py
 LIVE_CORE := examples/04_live_api.py
-LOCAL := $(wildcard examples/0[35689]_*.py examples/1[0-8]_*.py examples/19_*.py)
+LOCAL := $(wildcard examples/0[35689]_*.py examples/1[0-9]_*.py examples/2[01]_*.py)
 export INSPECT_LOG_DIR := out/inspect-logs
 EVALS_LOCAL_MODEL ?= llama3.2:latest
 GARAK_VERSION := 0.17.1
 GARAK_SPEC ?= probes.promptinject.HijackHateHumans
 
-.PHONY: help install run format lint typecheck test check-all live-core local redteam clean
+.PHONY: help install run format lint typecheck test check-all live-core local gate redteam clean
 
 help: ## Show targets
 	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS=":.*## "}; {printf "  %-12s %s\n", $$1, $$2}'
@@ -39,6 +39,9 @@ live-core: ## Run the hosted-API lessons against EVALS_MODEL (uses API credits)
 
 local: ## Run lessons that can use a local Ollama or llama-server
 	@for example in $(LOCAL); do uv run python $$example --local || exit $$?; done
+
+gate: ## Fail when the scripted release candidate misses the thresholds (lesson 21)
+	uv run python examples/21_ci_gate.py --gate
 
 redteam: ## Narrow garak scan via uvx against a local Ollama model (lesson 16)
 	@mkdir -p out/garak

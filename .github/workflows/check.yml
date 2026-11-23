@@ -14,3 +14,4 @@ jobs:
           python-version: "3.12"
       - run: uv sync --all-groups --locked
       - run: make check-all
+      - run: make gate

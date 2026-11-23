@@ -22,5 +22,8 @@
   end-state grading with pass@k and pass^k plus scaffold cost, and an SDK
   guardrail ablation. `examples/_agent.py` runs the agent inside an Inspect
   solver. `make redteam` runs a narrow garak scan via `uvx`.
+- Lessons 19–21: long-context dispersion with same-length haystacks,
+  region-aware multilingual checks scored with aliases, and a CI gate with
+  Wilson intervals that writes `out/scores.json`. `make gate` runs in CI.
 - Offline test harness, Makefile, CI, and the first architecture decision
   records under `docs/adr/`.

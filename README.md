@@ -72,11 +72,14 @@ model may be larger than you want. With no server it prints `SKIP:`.
 | `16_multiturn_garak.py` | A crescendo attack against a single-turn ask; `make redteam` runs a narrow garak scan |
 | `17_agent_passk.py` | End-state grading, pass@k against pass^k, and what a planner scaffold costs |
 | `18_guardrail_ablation.py` | SDK tool-input and input guardrails off and on: attack success and utility |
+| `19_long_context.py` | Two same-length haystacks: facts side by side against facts scattered |
+| `20_multilingual.py` | Regional facts asked in English and in the local language, scored with aliases |
+| `21_ci_gate.py` | Thresholds that fail the build, with Wilson intervals; writes `out/scores.json` |
 
 Lessons 01–04 share one question set (`examples/_qa.py`) and change only where
 the answers come from. From lesson 05 on, each lesson writes a small Python
 check, wraps it as an Inspect scorer (`_shared.check_scorer`), and plants the
-cases it must catch. Lessons 05, 06, and 08–18 also accept `--local` and
+cases it must catch. Lessons 05, 06, and 08–21 also accept `--local` and
 `--live`; they then report what they find instead of asserting it. In 11 and
 12 only the judge changes; the answers and human labels stay fixed, so the
 judge is still measured against gold.
@@ -87,7 +90,9 @@ plays planted tool calls and the SDK executes the tools and guardrails; the
 tools are in-memory fakes that record what they did, and the scorers read that
 ledger rather than the transcript.
 
-Lessons 19–21 are planned: long context, multilingual checks, and a CI gate.
+`make gate` runs lesson 21 with `--gate`, which exits 1 when the release
+candidate misses a threshold; CI runs it after `make check-all`. Add
+`--regressed` to watch a planted regression fail the build.
 
 ## Red-teaming with garak
 
@@ -105,7 +110,8 @@ log to `~/.local/share/garak/`.
 ## Generated files
 
 Inspect writes one log per run to `out/inspect-logs/` (`INSPECT_LOG_DIR`).
-`make clean` removes `out/`. Browse logs with `uv run inspect view --log-dir
+Lesson 21 writes `out/scores.json` (`EVALS_SCORES`), in the shape
+harness-primer lesson 16 reads. `make clean` removes `out/`. Browse logs with `uv run inspect view --log-dir
 out/inspect-logs`.
 
 ## Commands
@@ -122,6 +128,7 @@ out/inspect-logs`.
 | `check-all` | `lint`, then `typecheck`, then `test` |
 | `live-core` | Hosted-API lessons with `--live` (uses API credits) |
 | `local` | Lessons that can use Ollama or llama-server |
+| `gate` | Lesson 21 as a build gate; exits 1 on a missed threshold |
 | `redteam` | Narrow garak scan against a local Ollama model |
 | `clean` | Remove caches and `out/` |
 

@@ -29,6 +29,8 @@ in-memory fake that appends to a ledger; an agent with real tools would need
 
 ## Consequences
 
-`openai-agents` is a runtime dependency. Lesson 21's gate can produce the score
-that harness-primer lesson 16 reads. Lessons overlapping agents-primer 35–38
+`openai-agents` is a runtime dependency. Lesson 21 writes `out/scores.json`
+(override with `EVALS_SCORES`) as a list of records with the fields
+harness-primer lesson 16 reads (`peer`, `validation_accuracy`, `rows`), plus
+`ci_low`, `ci_high`, and `leaks`. Lessons overlapping agents-primer 35–38
 link to them rather than repeating them.
